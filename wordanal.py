@@ -1,32 +1,52 @@
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.tokenize import TweetTokenizer
+from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
+from collections import Counter
 
+with open('J.K.Rowling.-.Harry.Potter.and.the.Philosopher.s.Stone.2012.txt') as f:
+    book = f.read()
 
-
-with open('minitext.txt') as f:
-   text = f.read()
-text = text.replace('’', '\'')
+book = book.replace('’', '\'')
 stopWords = set(stopwords.words('english'))
 
-sentences = sent_tokenize(text)
+words = [word.lower() for word in TweetTokenizer().tokenize(book)]
 
-words = TweetTokenizer().tokenize(sentences[1])
+filtered_words = [word for word in words if word not in stopWords]
 
-wordsFiltered = []
+unique_words = set(words)
 
-for w in words:
-    if w not in stopWords:
-        wordsFiltered.append(w)
+filtered_unique_words = unique_words - stopWords
+        
+unique_words_wo_ap = set()
+with_ap = []
 
-print(wordsFiltered)
+for w in filtered_unique_words:
+    if '\'' in w:
+        with_ap.append(w)
+    else:
+        unique_words_wo_ap.add(w)
 
-#print data.read(35)
+ps = PorterStemmer()
 
-#data = "I am Csilla, the queen. You are my servants... All of you. Do you understand?"
+stem_dict = {}
 
-#print(data)
+PUNCTUATION_INDEX = 31
+for word in sorted(unique_words_wo_ap)[PUNCTUATION_INDEX:]:
+    stemmed = ps.stem(word)
+    if stemmed in stem_dict:
+        stem_dict[stemmed].append(word)
+    else:
+        stem_dict[stemmed] = [word]  
 
-#print(word_tokenize(data))
+filtered_words_cutted = sorted(filtered_words)[15326:]
 
-#print(sent_tokenize(data))
+frequency_dict = Counter([ps.stem(word) for word in filtered_words_cutted])
+
+def second_item(t):
+    return t[1]
+
+print(sorted(frequency_dict.items(), key=second_item, reverse=True))
+
+#print(len(words), len(filtered_words), len(unique_words), len(filtered_unique_words))
+
